@@ -12,8 +12,7 @@ public interface Algorithms {
         // Remplissage des monstres et des trésors
         GT.generateMonstersAndTreasures(monstersToFill, treasuresToFill);
         GT.check(monstersToFill, treasuresToFill); // Appel de la méthode de vérification
-        //showArray("Monsters:", monstersToFill);
-        //showArray("Treasures:", treasuresToFill);
+
 
         // Fusionner les tables de monstres et de trésors dans un seul board
         int[][] mergedBoard = BoardMerger.merge(monstersToFill, treasuresToFill);
