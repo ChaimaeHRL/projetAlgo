@@ -6,14 +6,25 @@ public interface Algorithms {
     static void main(String[] args) {
         int[][] monstersToFill = new int[11][7];
         int[][] treasuresToFill = new int[11][7];
+        // Initialisation des tableaux avec des cases vides
+        initializeBoard(monstersToFill);
+        initializeBoard(treasuresToFill);
+        // Remplissage des monstres et des trésors
         GT.generateMonstersAndTreasures(monstersToFill, treasuresToFill);
         GT.check(monstersToFill, treasuresToFill); // Appel de la méthode de vérification
-        showArray("Monsters:", monstersToFill);
-        showArray("Treasures:", treasuresToFill);
+        //showArray("Monsters:", monstersToFill);
+        //showArray("Treasures:", treasuresToFill);
 
         // Fusionner les tables de monstres et de trésors dans un seul board
         int[][] mergedBoard = BoardMerger.merge(monstersToFill, treasuresToFill);
-        showArray("Merged Board:", mergedBoard);
+        System.out.println("final Board");
+        for (int[] row : mergedBoard) {
+           for (int value : row) {
+                System.out.print(value + " ");
+            }
+            System.out.println(); // Nouvelle ligne après chaque rangée
+        }
+        //showArray("Merged Board:", mergedBoard);
     }
 
     /* --- Generate & Test --- */
@@ -21,6 +32,10 @@ public interface Algorithms {
         static void generateMonstersAndTreasures(int[][] monstersToFill, int[][] treasuresToFill) {
             for (int i = 0; i < monstersToFill.length; i++) {
                 for (int j = 0; j < monstersToFill[i].length; j++) {
+                    if (i == 0 && j == monstersToFill[i].length / 2) {
+                        // Laisser la case au milieu de la première ligne vide
+                        continue;
+                    }
                     int randomValue = rng.nextInt(6); // Génère un nombre entre 0 et 5
                     if (randomValue == 0 || randomValue == 1) { // 1 chance sur 3 d'être un monstre
                         monstersToFill[i][j] = rng.nextInt(50) + 1; // +1 pour pousser la plage de nombre vers le haut
@@ -60,13 +75,12 @@ public interface Algorithms {
     }
 
     /* --- Utility functions for GT --- */
-    static void showArray(String label, int[][] array) {
-        System.out.println(label);
-        for (int[] row : array) {
-            for (int value : row) {
-                System.out.print(value + " ");
+    static void initializeBoard(int[][] array) {
+        // Remplit le tableau avec des cases vides
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[i].length; j++) {
+                array[i][j] = 0;
             }
-            System.out.println(); // Nouvelle ligne après chaque rangée
         }
     }
 
@@ -96,8 +110,8 @@ public interface Algorithms {
             return mergedBoard;
         }
     }
+    
 }
-
 
     /* --- Divide & Conquer --- */
     interface DC {
