@@ -2,28 +2,26 @@ import java.util.*;
 
 public interface Algorithms {
     Random rng = new Random();
+    int[][] monstersToFill = new int[11][7];
+    int[][] treasuresToFill = new int[11][7];
 
     static void main(String[] args) {
-        int[][] monstersToFill = new int[11][7];
-        int[][] treasuresToFill = new int[11][7];
         // Initialisation des tableaux avec des cases vides
         initializeBoard(monstersToFill);
         initializeBoard(treasuresToFill);
         // Remplissage des monstres et des trésors
         GT.generateMonstersAndTreasures(monstersToFill, treasuresToFill);
         GT.check(monstersToFill, treasuresToFill); // Appel de la méthode de vérification
-
-
         // Fusionner les tables de monstres et de trésors dans un seul board
-        int[][] mergedBoard = BoardMerger.merge(monstersToFill, treasuresToFill);
+        int[][] board = BoardMerger.merge(monstersToFill, treasuresToFill);
         System.out.println("final Board");
-        for (int[] row : mergedBoard) {
-           for (int value : row) {
+        for (int[] row : board) {
+            for (int value : row) {
                 System.out.print(value + " ");
             }
             System.out.println(); // Nouvelle ligne après chaque rangée
         }
-        //showArray("Merged Board:", mergedBoard);
+        //showArray("Merged Board:", board);
     }
 
     /* --- Generate & Test --- */
@@ -74,11 +72,11 @@ public interface Algorithms {
     }
 
     /* --- Utility functions for GT --- */
-    static void initializeBoard(int[][] array) {
+    static void initializeBoard(int[][] board) {
         // Remplit le tableau avec des cases vides
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[i].length; j++) {
-                array[i][j] = 0;
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                board[i][j] = 0;
             }
         }
     }
@@ -86,31 +84,33 @@ public interface Algorithms {
     /* --- Board Merger --- */
     static class BoardMerger {
         static int[][] merge(int[][] monsters, int[][] treasures) {
-            int[][] mergedBoard = new int[monsters.length][monsters[0].length];
+            int[][] board = new int[monsters.length][monsters[0].length];
             for (int i = 0; i < monsters.length; i++) {
                 for (int j = 0; j < monsters[i].length; j++) {
                     if (monsters[i][j] != 0 && treasures[i][j] != 0) {
                         // Si les deux tableaux ont des valeurs non nulles, choisir une aléatoirement
                         if (rng.nextBoolean()) {
-                            mergedBoard[i][j] = monsters[i][j];
+                            board[i][j] = monsters[i][j];
                         } else {
-                            mergedBoard[i][j] = treasures[i][j];
+                            board[i][j] = treasures[i][j];
                         }
                     } else if (monsters[i][j] != 0) {
-                        mergedBoard[i][j] = monsters[i][j];
+                        board[i][j] = monsters[i][j];
                     } else if (treasures[i][j] != 0) {
-                        mergedBoard[i][j] = treasures[i][j];
+                        board[i][j] = treasures[i][j];
                     } else {
                         // Si les deux tableaux ont des valeurs nulles, laisser la case vide
-                        mergedBoard[i][j] = 0;
+                        board[i][j] = 0;
                     }
                 }
             }
-            return mergedBoard;
+            return board;
         }
     }
-    
 }
+
+
+
 
     /* --- Divide & Conquer --- */
     interface DC {
