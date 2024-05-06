@@ -1,18 +1,30 @@
+public class State {
+    int[][] monsters;  // Grille représentant les monstres, où chaque valeur représente la difficulté (ou le coût) de vaincre le monstre à cette position.
+    int[][] treasures; // Grille représentant les trésors, où chaque valeur représente le gain de score (ou le trésor) à cette position.
+    int heroHealth;    // Santé initiale du héros avant de commencer le parcours.
+
+    // Constructeur pour initialiser les états avec les valeurs nécessaires
+    public State(int[][] monsters, int[][] treasures, int heroHealth) {
+        this.monsters = monsters;
+        this.treasures = treasures;
+        this.heroHealth = heroHealth;
+    }
+}
 interface DP {
     static String perfectSolution(State state) {
-        int rows = state.monsters.length;
-        int cols = state.monsters[0].length;
-        ScorePath[][][] dp = new ScorePath[rows][cols][3]; // Troisième dimension pour les directions: 0 = gauche, 1 = droite, 2 = bas
+        int lines = state.monsters.length;
+        int columns = state.monsters[0].length;
+        ScorePath[][][] dp = new ScorePath[lines][columns][3]; // Troisième dimension pour les directions: 0 = gauche, 1 = droite, 2 = bas
 
         // Initialisation des chemins possibles avec un score minimal et un chemin vide
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (int i = 0; i < lines; i++) {
+            for (int j = 0; j < columns; j++) {
                 dp[i][j] = new ScorePath[] {new ScorePath(Integer.MIN_VALUE, ""), new ScorePath(Integer.MIN_VALUE, ""), new ScorePath(Integer.MIN_VALUE, "")};
             }
         }
 
         // Initialisation de la première ligne où le héros peut choisir de partir de n'importe quelle colonne
-        for (int j = 0; j < cols; j++) {
+        for (int j = 0; j < columns; j++) {
             int initialScore = state.treasures[0][j] - state.monsters[0][j];
             if (state.heroHealth + initialScore > 0) {
                 dp[0][j][2] = new ScorePath(initialScore, ""); // Commence ici sans direction horizontale
@@ -20,8 +32,8 @@ interface DP {
         }
 
         // Remplir le tableau dp
-        for (int i = 1; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (int i = 1; i < lines; i++) {
+            for (int j = 0; j < columns; j++) {
                 if (state.heroHealth > 0) { // Si le héros a encore de la santé
                     updateDP(dp, state, i, j);
                 }
@@ -30,10 +42,10 @@ interface DP {
 
         // Trouver le meilleur chemin a partir de la dernière ligne
         ScorePath bestPath = new ScorePath(Integer.MIN_VALUE, "");
-        for (int j = 0; j < cols; j++) {
+        for (int j = 0; j < columns; j++) {
             for (int d = 0; d < 3; d++) {
-                if (dp[rows - 1][j][d].score > bestPath.score) {
-                    bestPath = dp[rows - 1][j][d];
+                if (dp[lines - 1][j][d].score > bestPath.score) {
+                    bestPath = dp[lines - 1][j][d];
                 }
             }
         }
@@ -41,8 +53,7 @@ interface DP {
     }
 
     static void updateDP(ScorePath[][][] dp, State state, int i, int j) {
-        int rows = state.monsters.length;
-        int cols = state.monsters[0].length;
+        int columns = state.monsters[0].length;
 
         for (int dir = 0; dir < 3; dir++) {
             if (dp[i-1][j][dir].score != Integer.MIN_VALUE) { // Héritage du score de l'étage précédent
@@ -60,7 +71,7 @@ interface DP {
                 dp[i][j][0] = new ScorePath(leftScore, dp[i][j-1][0].path + "l");
             }
         }
-        if (j < cols - 1 && dp[i][j+1][1].score != Integer.MIN_VALUE) { // Droite
+        if (j < columns - 1 && dp[i][j+1][1].score != Integer.MIN_VALUE) { // Droite
             int rightScore = dp[i][j+1][1].score + state.treasures[i][j] - state.monsters[i][j];
             if (rightScore > 0) {
                 dp[i][j][1] = new ScorePath(rightScore, dp[i][j+1][1].path + "r");
