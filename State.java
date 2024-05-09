@@ -1,7 +1,7 @@
 /*
 * State object : contains everything related to a game's current state
 * */
-public class State {
+public class State{
     int[] heroPos;  // Current position of the hero in the level
     int heroHealth;  // Current health of the hero, between 0 and 100
     int heroScore;  // Current score of the hero
