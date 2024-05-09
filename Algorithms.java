@@ -12,7 +12,7 @@ public interface Algorithms {
         verificate(monsters, treasures);
         int[][] board = mix(monsters, treasures);
         System.out.println("Final Board:");
-        printBoard(board);
+        showBoard(board);
     }
 
     /* --- Generate & Test --- */
@@ -68,7 +68,7 @@ public interface Algorithms {
     }
 
     /* --- Utility functions --- */
-    static void printBoard(int[][] board) {
+    static void showBoard(int[][] board) {
         for (int[] row : board) {
             for (int value : row) {
                 if (value == 0) {
