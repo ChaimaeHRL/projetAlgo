@@ -1,53 +1,7 @@
+import java.util.Arrays;
+
 public class LevelGenerator {
-
-    // Méthode principale pour réorganiser les rangées du niveau
-    public static void reorderRows(int[][] level) {
-        int numRows = level.length;
-        
-        // Tableaux pour stocker les valeurs des trésors et des monstres pour chaque rangée
-        int[] treasuresValues = new int[numRows];
-        int[] monstersStrengths = new int[numRows];
-        
-        // Calculer les valeurs de trésors et de monstres pour chaque rangée
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < level[i].length; j++) {
-                if (level[i][j] > 0) { // Trésor
-                    treasuresValues[i] += level[i][j];
-                } else if (level[i][j] < 0) { // Monstre
-                    monstersStrengths[i] += Math.abs(level[i][j]); // Utiliser une valeur positive pour les monstres
-                }
-            }
-        }
-
-        // Réorganiser les rangées en fonction de la différence entre les valeurs de trésors et de monstres
-        for (int i = 0; i < numRows; i++) {
-            for (int j = i + 1; j < numRows; j++) {
-                int diffI = treasuresValues[i] - monstersStrengths[i];
-                int diffJ = treasuresValues[j] - monstersStrengths[j];
-                if (diffI < diffJ) {
-                    swapRows(level, i, j);
-                    swapValues(treasuresValues, i, j);
-                    swapValues(monstersStrengths, i, j);
-                }
-            }
-        }
-    }
-
-    // Méthode pour échanger deux rangées dans la grille
-    private static void swapRows(int[][] level, int row1, int row2) {
-        int[] temp = level[row1];
-        level[row1] = level[row2];
-        level[row2] = temp;
-    }
-
-    // Méthode pour échanger deux valeurs dans un tableau
-    private static void swapValues(int[] array, int index1, int index2) {
-        int temp = array[index1];
-        array[index1] = array[index2];
-        array[index2] = temp;
-    }
     
-    // Méthode principale pour tester
     public static void main(String[] args) {
         // Exemple de génération d'un niveau
         int[][] level = {
@@ -65,6 +19,77 @@ public class LevelGenerator {
                 System.out.print(level[i][j] + " ");
             }
             System.out.println();
+        }
+    }
+    
+    public static void reorderRows(int[][] level) {
+        // Calculer les valeurs de trésors et de monstres pour chaque rangée
+        int numRows = level.length;
+        int[] rowValues = new int[numRows];
+        for (int i = 0; i < numRows; i++) {
+            int treasureSum = Arrays.stream(level[i]).filter(value -> value > 0).sum();
+            int monsterSum = Arrays.stream(level[i]).filter(value -> value < 0).map(Math::abs).sum();
+            rowValues[i] = treasureSum - monsterSum;
+        }
+
+        // Appliquer le tri fusion en utilisant les valeurs calculées pour chaque rangée
+        triFusion(level, rowValues, 0, numRows - 1);
+    }
+
+    public static void triFusion(int[][] level, int[] rowValues, int debut, int fin) {
+        if (debut < fin) {
+            int milieu = (debut + fin) / 2;
+            triFusion(level, rowValues, debut, milieu);
+            triFusion(level, rowValues, milieu + 1, fin);
+            fusionner(level, rowValues, debut, milieu, fin);
+        }
+    }
+
+    public static void fusionner(int[][] level, int[] rowValues, int debut, int milieu, int fin) {
+        int n1 = milieu - debut + 1;
+        int n2 = fin - milieu;
+
+        int[][] gauche = new int[n1][];
+        int[] gaucheValues = new int[n1];
+        int[][] droite = new int[n2][];
+        int[] droiteValues = new int[n2];
+
+        for (int i = 0; i < n1; ++i) {
+            gauche[i] = level[debut + i];
+            gaucheValues[i] = rowValues[debut + i];
+        }
+        for (int j = 0; j < n2; ++j) {
+            droite[j] = level[milieu + 1 + j];
+            droiteValues[j] = rowValues[milieu + 1 + j];
+        }
+
+        int i = 0, j = 0;
+        int k = debut;
+        while (i < n1 && j < n2) {
+            if (gaucheValues[i] >= droiteValues[j]) {
+                level[k] = gauche[i];
+                rowValues[k] = gaucheValues[i];
+                i++;
+            } else {
+                level[k] = droite[j];
+                rowValues[k] = droiteValues[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            level[k] = gauche[i];
+            rowValues[k] = gaucheValues[i];
+            i++;
+            k++;
+        }
+
+        while (j < n2) {
+            level[k] = droite[j];
+            rowValues[k] = droiteValues[j];
+            j++;
+            k++;
         }
     }
 }
