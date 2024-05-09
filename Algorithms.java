@@ -79,7 +79,13 @@ public interface Algorithms {
     static void printBoard(int[][] board) {
         for (int[] row : board) {
             for (int value : row) {
-                System.out.print(value + " ");
+                if (value == 0) {
+                    System.out.print("⬛️ "); // Case vide
+                } else if (value <= 50) {
+                    System.out.print("👹 "); // Monstre
+                } else {
+                    System.out.print("💰 "); // Trésor
+                }
             }
             System.out.println(); // Nouvelle ligne après chaque rangée
         }
