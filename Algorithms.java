@@ -7,14 +7,10 @@ public interface Algorithms {
         int[][] monsters = new int[11][7];
         int[][] treasures = new int[11][7];
 
-        // Remplissage des monstres et des trésors
+        // Appel des différents méthodes utilisées
         generateMonstersAndTreasures(monsters, treasures);
-        // Appel de la méthode de vérification
-        check(monsters, treasures);
-        // Fusionner les tables de monstres et de trésors dans un seul board
-        int[][] board = merge(monsters, treasures);
-
-        // Affichage du tableau final
+        verificate(monsters, treasures);
+        int[][] board = mix(monsters, treasures);
         System.out.println("Final Board:");
         printBoard(board);
     }
@@ -24,50 +20,46 @@ public interface Algorithms {
         for (int i = 0; i < monstersToFill.length; i++) {
             for (int j = 0; j < monstersToFill[i].length; j++) {
                 if (i == 0 && j == monstersToFill[i].length / 2) {
-                    // Laisser la case au milieu de la première ligne vide
                     continue;
                 }
-                int randomNum = rng.nextInt(6) + 1; // Génère un nombre entre 1 et 6
-                if (randomNum % 6 == 0) { // 1 chance sur 6 d'être un trésor
-                    treasuresToFill[i][j] = rng.nextInt(99) + 1; // Valeur du trésor entre 1 et 99
-                } else if (randomNum % 3 == 0) { // 1 chance sur 3 d'être un monstre
-                    monstersToFill[i][j] = rng.nextInt(50) + 1; // +1 pour pousser la plage de nombre vers le haut
-                } else { // Autrement, la case est vide
-                    monstersToFill[i][j] = 0;
-                    treasuresToFill[i][j] = 0;
+                int randomNum = rng.nextInt(6) + 1; // 1,2,3,4,5,6
+                if (randomNum % 6 == 0) { // 1 chance sur 6
+                    treasuresToFill[i][j] = rng.nextInt(99) + 1; // Valeur du trésor 
+                } else if (randomNum % 3 == 0) { 
+                    monstersToFill[i][j] = rng.nextInt(50) + 1; //valeur du monstre
+                } else { 
+                    monstersToFill[i][j] = 0;//la case est vide
+                    treasuresToFill[i][j] = 0;//la case est vide
                 }
             }
         }
     }
 
-    static void check(int[][] monsters, int[][] treasures) {
+    static void verificate(int[][] monsters, int[][] treasures) {
         for (int i = 0; i < monsters.length; i++) {
-            boolean hasEmptyCell = false;
+            boolean Empty = false;
             for (int j = 0; j < monsters[i].length; j++) {
                 if (monsters[i][j] == 0 && treasures[i][j] == 0) {
-                    hasEmptyCell = true;
+                    Empty = true;
                     break;
                 }
             }
-            if (!hasEmptyCell) {
-                // Si aucune case vide n'est trouvée dans la ligne, définir une case vide aléatoire
+            if (!Empty) {
+                // Definir des cases vides
                 int randomColumn = rng.nextInt(monsters[i].length);
                 monsters[i][randomColumn] = 0;
                 treasures[i][randomColumn] = 0;
             }
         }
     }
-
-    /* --- Board Merger --- */
-    static int[][] merge(int[][] monsters, int[][] treasures) {
+    static int[][] mix(int[][] monsters, int[][] treasures) {
         int[][] board = new int[monsters.length][monsters[0].length];
         for (int i = 0; i < monsters.length; i++) {
             for (int j = 0; j < monsters[i].length; j++) {
                 if (monsters[i][j] != 0 && treasures[i][j] != 0) {
                     // Si les deux tableaux ont des valeurs non nulles, choisir aléatoirement
-                    board[i][j] = rng.nextBoolean() ? monsters[i][j] : treasures[i][j];
+                    board[i][j] = rng.nextBoolean() ? monsters[i][j] : treasures[i][j];// si les 2 tables ont des valeurs non nuls on va choisir aléatoirement
                 } else {
-                    // Sinon, choisir la valeur non nulle ou laisser la case vide
                     board[i][j] = monsters[i][j] != 0 ? monsters[i][j] : treasures[i][j];
                 }
             }
@@ -80,17 +72,19 @@ public interface Algorithms {
         for (int[] row : board) {
             for (int value : row) {
                 if (value == 0) {
-                    System.out.print("⬛️ "); // Case vide
+                    System.out.print("0   "); // Case vide
                 } else if (value <= 50) {
-                    System.out.print("👹 "); // Monstre
+                    System.out.printf("%-4s", "M" + value); // Afficher la valeur du monstre
                 } else {
-                    System.out.print("💰 "); // Trésor
+                    System.out.printf("%-4s", "T" + (value - 50)); // Afficher la valeur du trésor
                 }
             }
-            System.out.println(); // Nouvelle ligne après chaque rangée
+            System.out.println(); 
         }
     }
+    
 }
+
 
 
 
