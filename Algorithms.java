@@ -2,8 +2,8 @@ import java.util.*;
 
 public interface Algorithms {
     Random rng = new Random();
-    int[][] monstersToFill = new int[11][7];
-    int[][] treasuresToFill = new int[11][7];
+    int[][] monsters = new int[11][7];
+    int[][] treasures = new int[11][7];
 
     static void main(String[] args) {
         // Initialisation des tableaux avec des cases vides
