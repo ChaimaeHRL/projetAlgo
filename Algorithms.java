@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.Arrays;
 
 public interface Algorithms {
     Random rng = new Random();
@@ -7,7 +8,7 @@ public interface Algorithms {
         int[][] monsters = new int[11][7];
         int[][] treasures = new int[11][7];
 
-        // Appel des différents méthodes utilisées
+        // Appel des différentes méthodes utilisées
         generateMonstersAndTreasures(monsters, treasures);
         verificate(monsters, treasures);
         int[][] board = mix(monsters, treasures);
@@ -45,13 +46,14 @@ public interface Algorithms {
                 }
             }
             if (!Empty) {
-                // Definir des cases vides
+                // Définir des cases vides
                 int randomColumn = rng.nextInt(monsters[i].length);
                 monsters[i][randomColumn] = 0;
                 treasures[i][randomColumn] = 0;
             }
         }
     }
+    
     static int[][] mix(int[][] monsters, int[][] treasures) {
         int[][] board = new int[monsters.length][monsters[0].length];
         for (int i = 0; i < monsters.length; i++) {
@@ -82,22 +84,93 @@ public interface Algorithms {
             System.out.println(); 
         }
     }
-    
+}
+
+/* --- Divide & Conquer --- */
+
+interface DC {
+    static void sortLevel(int[][] monstersToSort, int[][] treasuresToSort) {
+        int[] rowValues = new int[monstersToSort.length];
+        for (int i = 0; i < monstersToSort.length; i++) {
+            rowValues[i] = calculateRowValue(monstersToSort[i], treasuresToSort[i]);
+        }
+        sortByRowValue(monstersToSort, treasuresToSort, rowValues, 0, monstersToSort.length - 1);
+    }
+
+    static int calculateRowValue(int[] monsters, int[] treasures) {
+        int totalTreasures = Arrays.stream(treasures).sum();
+        int totalMonsterStrengths = Arrays.stream(monsters).sum();
+        return totalTreasures - totalMonsterStrengths;
+    }
+
+    static void sortByRowValue(int[][] monsters, int[][] treasures, int[] rowValues, int low, int high) {
+        if (low < high) {
+            int mid = (low + high) / 2;
+            sortByRowValue(monsters, treasures, rowValues, low, mid);
+            sortByRowValue(monsters, treasures, rowValues, mid + 1, high);
+            merge(monsters, treasures, rowValues, low, mid, high);
+        }
+    }
+
+    static void merge(int[][] monsters, int[][] treasures, int[] rowValues, int low, int mid, int high) {
+        int leftSize = mid - low + 1;
+        int rightSize = high - mid;
+
+        // Tableaux temporaires pour stocker les parties gauche et droite
+        int[][] leftMonsters = new int[leftSize][];
+        int[][] leftTreasures = new int[leftSize][];
+        int[] leftValues = new int[leftSize];
+
+        int[][] rightMonsters = new int[rightSize][];
+        int[][] rightTreasures = new int[rightSize][];
+        int[] rightValues = new int[rightSize];
+
+        // Copie des parties gauche et droite dans les tableaux temporaires
+        System.arraycopy(monsters, low, leftMonsters, 0, leftSize);
+        System.arraycopy(treasures, low, leftTreasures, 0, leftSize);
+        System.arraycopy(rowValues, low, leftValues, 0, leftSize);
+
+        System.arraycopy(monsters, mid + 1, rightMonsters, 0, rightSize);
+        System.arraycopy(treasures, mid + 1, rightTreasures, 0, rightSize);
+        System.arraycopy(rowValues, mid + 1, rightValues, 0, rightSize);
+
+        int i = 0, j = 0, k = low;
+        while (i < leftSize && j < rightSize) {
+            // Inverser l'ordre de tri en comparant les valeurs de rowValues
+            if (leftValues[i] >= rightValues[j]) {
+                monsters[k] = leftMonsters[i];
+                treasures[k] = leftTreasures[i];
+                rowValues[k] = leftValues[i];
+                i++;
+            } else {
+                monsters[k] = rightMonsters[j];
+                treasures[k] = rightTreasures[j];
+                rowValues[k] = rightValues[j];
+                j++;
+            }
+            k++;
+        }
+
+        // Copie des éléments restants dans les parties gauche et droite
+        while (i < leftSize) {
+            monsters[k] = leftMonsters[i];
+            treasures[k] = leftTreasures[i];
+            rowValues[k] = leftValues[i];
+            i++;
+            k++;
+        }
+
+        while (j < rightSize) {
+            monsters[k] = rightMonsters[j];
+            treasures[k] = rightTreasures[j];
+            rowValues[k] = rightValues[j];
+            j++;
+            k++;
+        }
+    }
 }
 
 
-
-
-
-    /* --- Divide & Conquer --- */
-    interface DC {
-        static void sortLevel(int[][] monstersToSort, int[][] treasuresToSort) {
-            //TODO
-        }
-
-        /* --- Utility functions for DC --- */
-        //TODO (if you have any)
-    }
 
     /* --- Greedy Search --- */
     interface GS {
