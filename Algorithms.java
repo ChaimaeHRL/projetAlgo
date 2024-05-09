@@ -7,13 +7,13 @@ public interface Algorithms {
 
     static void main(String[] args) {
         // Initialisation des tableaux avec des cases vides
-        initializeBoard(monstersToFill);
-        initializeBoard(treasuresToFill);
+        initializeBoard(monsters);
+        initializeBoard(treasures);
         // Remplissage des monstres et des trésors
-        GT.generateMonstersAndTreasures(monstersToFill, treasuresToFill);
-        GT.check(monstersToFill, treasuresToFill); // Appel de la méthode de vérification
+        GT.generateMonstersAndTreasures(monsters, treasures);
+        GT.check(monsters, treasures); // Appel de la méthode de vérification
         // Fusionner les tables de monstres et de trésors dans un seul board
-        int[][] board = BoardMerger.merge(monstersToFill, treasuresToFill);
+        int[][] board = BoardMerger.merge(monsters, treasures);
         System.out.println("final Board");
         for (int[] row : board) {
             for (int value : row) {
@@ -31,17 +31,17 @@ public interface Algorithms {
                 for (int j = 0; j < monstersToFill[i].length; j++) {
                     if (i == 0 && j == monstersToFill[i].length / 2) {
                         // Laisser la case au milieu de la première ligne vide
-                        continue;
-                    }
-                    int randomValue = rng.nextInt(6); // Génère un nombre entre 0 et 5
-                    if (randomValue == 0 || randomValue == 1) { // 1 chance sur 3 d'être un monstre
-                        monstersToFill[i][j] = rng.nextInt(50) + 1; // +1 pour pousser la plage de nombre vers le haut
-                    } else if (randomValue == 2) { // 1 chance sur 6 d'être un trésor
+                        continue;}
+                    int randomNum = rng.nextInt(6) + 1; // Génère un nombre entre 1 et 6
+                    if (randomNum % 6 == 0) { // 1 chance sur 6 d'être un trésor
                         treasuresToFill[i][j] = rng.nextInt(99) + 1; // Valeur du trésor entre 1 et 99
+                    } else if (randomNum % 3 == 0) { // 1 chance sur 3 d'être un monstre
+                        monstersToFill[i][j] = rng.nextInt(50) + 1; // +1 pour pousser la plage de nombre vers le haut
                     }
                 }
             }
         }
+        
 
         static void check(int[][] monsters, int[][] treasures) {
             for (int i = 0; i < monsters.length; i++) {
