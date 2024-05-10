@@ -7,7 +7,7 @@ public interface Algorithms {
     static void main(String[] args) {
         int[][] monsters = new int[11][7];
         int[][] treasures = new int[11][7];
-        int[] heroPos = {0, 3}; // Position initiale du héros
+        int[] heroPos = {0, 4}; // Position initiale du héros
         int heroHealth = 100; // Santé initiale du héros
         int heroScore = 0; // Score initial du héros
         int nbHint = 0; // Nombre d'indices disponibles
@@ -28,6 +28,8 @@ public interface Algorithms {
         //Utilisation de la programmation dynamique (DP)
         String bestPath = DP.perfectSolution(state);
         System.out.println("Le chemin optimal est : " + bestPath);
+        int greatSolution = GS.findGreedySolution(state, nbHint, nbLevel, nbHint);
+        System.out.println("greatSolution");
     }
 
     /* --- Generate & Test --- */
@@ -189,94 +191,172 @@ interface DC {
     /* --- Greedy Search --- */
     interface GS {
         static int greedySolution(State state) {
-            //TODO
-            return 0;
+            return findGreedySolution(state, state.heroPos[0], state.heroPos[1], 5);
         }
 
-        /* --- Utility functions for GS --- */
-        //TODO (if you have any)
+        static int findGreedySolution(State state, int row, int col, int remainingDepth) {
+            // Base case: depth limit reached or last row reached
+            if (remainingDepth == 0 || row >= state.monsters.length) {
+                return state.heroHealth + state.treasures[row][col] - state.monsters[row][col];
+            }
+
+            int rows = state.monsters.length;
+            int cols = state.monsters[0].length;
+
+            // Initialize possible paths
+            int scoreLeft = Integer.MIN_VALUE;
+            int scoreRight = Integer.MIN_VALUE;
+            int scoreDown = Integer.MIN_VALUE;
+
+            // Explore left path
+            if (col - 1 >= 0) {
+                scoreLeft = findGreedySolution(state, row + 1, col - 1, remainingDepth - 1);
+            }
+
+            // Explore right path
+            if (col + 1 < cols) {
+                scoreRight = findGreedySolution(state, row + 1, col + 1, remainingDepth - 1);
+            }
+
+            // Explore down path
+            if (row + 1 < rows) {
+                scoreDown = findGreedySolution(state, row + 1, col, remainingDepth - 1);
+            }
+
+            // Calculate scores with current state
+            int currentScore = state.heroHealth + state.treasures[row][col] - state.monsters[row][col];
+
+            // Choose the best path
+            int bestScore = Math.max(Math.max(scoreLeft, scoreRight), scoreDown);
+
+            return currentScore + bestScore;
+        }
     }
 
-    /* --- Dynamic Programming --- */
+/* --- Dynamic Programming --- */
     
-    interface DP {
-        static String perfectSolution(State state) {
-            int lines = state.monsters.length;
-            int columns = state.monsters[0].length;
-            ScorePath[][][] dp = new ScorePath[lines][columns][3]; // Troisième dimension pour les directions: 0 = gauche, 1 = droite, 2 = bas
-    
-            // Initialisation des chemins possibles avec un score minimal et un chemin vide
-            for (int i = 0; i < lines; i++) {
-                for (int j = 0; j < columns; j++) {
-                    dp[i][j] = new ScorePath[] {new ScorePath(Integer.MIN_VALUE, ""), new ScorePath(Integer.MIN_VALUE, ""), new ScorePath(Integer.MIN_VALUE, "")};
-                }
-            }
-    
-            // Initialisation de la première ligne où le héros peut choisir de partir de n'importe quelle colonne
+interface DP {
+    /**
+    * @requires state != null && state.monsters != null && state.treasures != null &&
+    * @requires state.monsters.length == state.treasures.length && state.monsters[0].length == state.treasures[0].length &&
+    * @requires state.monsters.length > 0 && state.monsters[0].length > 0;
+    * @ensures \result != null;
+    * @pure
+    */
+    static String perfectSolution(State state) {
+        int lines = state.monsters.length;
+        int columns = state.monsters[0].length;
+        ScorePath[][][] dp = new ScorePath[lines][columns][3]; 
+
+       //@ loop_invariant 0 <= i && i <= lines;
+       //@ loop_invariant (\forall int k, l, m; 0 <= k < i && 0 <= l < columns && 0 <= m < 3; dp[k][l][m] != null);
+       //@ decreases lines - i;
+        for (int i = 0; i < lines; i++) {
+            //@ loop_invariant 0 <= j && j <= columns;
+            //@ decreases columns - j;
             for (int j = 0; j < columns; j++) {
-                int initialScore = state.treasures[0][j] - state.monsters[0][j];
-                if (state.heroHealth + initialScore > 0) {
-                    dp[0][j][2] = new ScorePath(initialScore, ""); // Commence ici sans direction horizontale
-                }
+                dp[i][j] = new ScorePath[] {
+                    new ScorePath(Integer.MIN_VALUE, ""),
+                    new ScorePath(Integer.MIN_VALUE, ""),
+                    new ScorePath(Integer.MIN_VALUE, "")
+                };
             }
-    
-            // Remplir le tableau dp
-            for (int i = 1; i < lines; i++) {
-                for (int j = 0; j < columns; j++) {
-                    if (state.heroHealth > 0) { // Si le héros a encore de la santé
-                        updateDP(dp, state, i, j);
-                    }
-                }
+        }
+
+        //@ loop_invariant 0 <= j && j <= columns;
+        //@ decreases columns - j;
+        for (int j = 0; j < columns; j++) {
+            int score_initial = state.treasures[0][j] * 2 - state.monsters[0][j] * 5; 
+            if (state.heroHealth + score_initial > 0) {
+                dp[0][j][0] = new ScorePath(score_initial, "l");
+                dp[0][j][1] = new ScorePath(score_initial, "r");
+                dp[0][j][2] = new ScorePath(score_initial, "d");
             }
-    
-            // Trouver le meilleur chemin a partir de la dernière ligne
-            ScorePath bestPath = new ScorePath(Integer.MIN_VALUE, "");
+        }
+
+        //@ loop_invariant 1 <= i && i <= lines;
+        //@ loop_invariant (\forall int k, l, m; 0 <= k < i && 0 <= l < columns && 0 <= m < 3; dp[k][l][m] != null);
+        //@ decreases lines - i;
+        for (int i = 1; i < lines; i++) {
+            //@ loop_invariant 0 <= j && j <= columns;
+            //@ decreases columns - j;
             for (int j = 0; j < columns; j++) {
-                for (int d = 0; d < 3; d++) {
-                    if (dp[lines - 1][j][d].score > bestPath.score) {
-                        bestPath = dp[lines - 1][j][d];
+                updateDP(dp, state, i, j);
+            }
+        }
+        return extractBestPath(dp, lines, columns);
+    }
+/**
+* @requires dp != null && state != null; 
+* @requires dp.length > i && i >= 1; // i doit être dans les limites valides de dp et non la première ligne
+* @requires dp[0].length > j && j >= 0; // j doit être dans les limites valides de dp
+* @requires (\forall int x; 0 <= x < dp.length; dp[x] != null); // vérifie que chaque ligne n'est pas null
+* @requires (\forall int x; 0 <= x < dp.length; \forall int y; 0 <= y < dp[x].length; dp[x][y] != null); // vérifie que chaque cellule n'est pas null
+* @requires (\forall int x; 0 <= x < dp.length; \forall int y; 0 <= y < dp[x].length; dp[x][y].length == 3); // vérifie que chaque cellule doit avoir 3 directions
+* @ensures (\forall int k; 0 <= k < 3; dp[i][j][k].score >= \old(dp[i][j][k].score)); // vérifier que le score ne diminuer pas
+* @ensures (\forall int k; 0 <= k < 3; dp[i][j][k].path != null); // vérifier que les paths updates ne sont pas null
+*/
+    static void updateDP(ScorePath[][][] dp, State state, int i, int j) {
+        int columns = state.monsters[0].length;
+        for (int prevDir = 0; prevDir < 3; prevDir++) { 
+            int prevRow = i - 1;
+            for (int offset = -1; offset <= 1; offset++) {
+                int prevCol = j + offset; 
+                if (prevCol >= 0 && prevCol < columns && dp[prevRow][prevCol][prevDir].score != Integer.MIN_VALUE && !isOppositeDirection(prevDir, offset)) {
+                    int score = dp[prevRow][prevCol][prevDir].score + state.treasures[i][j] * 2 - state.monsters[i][j] * 5;
+                    int newDir = getNewDirection(offset);
+                    if (score > dp[i][j][newDir].score) {
+                        dp[i][j][newDir] = new ScorePath(score, dp[prevRow][prevCol][prevDir].path + getDirectionChar(newDir));
                     }
                 }
             }
-            //System.out.println("Le chemin optimal est: " + bestPath.path);
-            return bestPath.path;
         }
-    
-        static void updateDP(ScorePath[][][] dp, State state, int i, int j) {
-            int columns = state.monsters[0].length;
-    
-            for (int dir = 0; dir < 3; dir++) {
-                if (dp[i-1][j][dir].score != Integer.MIN_VALUE) { // Héritage du score de l'étage précédent
-                    int score = dp[i-1][j][dir].score + state.treasures[i][j] - state.monsters[i][j];
-                    if (score > 0) { // Continuation vers le bas si possible
-                        dp[i][j][2] = new ScorePath(score, dp[i-1][j][dir].path + "d");
-                    }
-                }
-            }
-    
-            // Continuation vers la gauche ou la droite
-            if (j > 0 && dp[i][j-1][0].score != Integer.MIN_VALUE) { // Gauche
-                int leftScore = dp[i][j-1][0].score + state.treasures[i][j] - state.monsters[i][j];
-                if (leftScore > 0) {
-                    dp[i][j][0] = new ScorePath(leftScore, dp[i][j-1][0].path + "l");
-                }
-            }
-            if (j < columns - 1 && dp[i][j+1][1].score != Integer.MIN_VALUE) { // Droite
-                int rightScore = dp[i][j+1][1].score + state.treasures[i][j] - state.monsters[i][j];
-                if (rightScore > 0) {
-                    dp[i][j][1] = new ScorePath(rightScore, dp[i][j+1][1].path + "r");
+    }
+
+    /**
+    * @requires dp != null && lines > 0 && columns > 0 &&
+    *  (\forall int i; 0 <= i < lines; 
+    *  \forall int j; 0 <= j < columns; 
+    *  \forall int d; 0 <= d < 3; dp[i][j][d] != null);
+    * @ensures \result != null;
+    * @pure
+    */
+    static String extractBestPath(ScorePath[][][] dp, int lines, int columns) {
+        ScorePath bestPath = new ScorePath(Integer.MIN_VALUE, "");
+        //@ loop_invariant 0 <= j && j <= columns;
+        //@ decreases columns - j;
+        for (int j = 0; j < columns; j++) {
+            //@ loop_invariant 0 <= d && d < 3;
+            //@ decreases 3 - d;
+            for (int d = 0; d < 3; d++) {
+                if (dp[lines - 1][j][d].score > bestPath.score) {
+                    bestPath = dp[lines - 1][j][d];
                 }
             }
         }
+        return bestPath.path;
+    }
     
-        class ScorePath {
-            int score;
-            String path;
+    static boolean isOppositeDirection(int prevDir, int offset) {
+        return (prevDir == 0 && offset == 1) || (prevDir == 1 && offset == -1); 
+    }
+
+    static int getNewDirection(int offset) {
+        return (offset == -1) ? 0 : (offset == 1) ? 1 : 2; 
+    }
     
-            ScorePath(int score, String path) {
-                this.score = score;
-                this.path = path;
-            }
+    static char getDirectionChar(int dir) {
+        return (dir == 0) ? 'l' : (dir == 1) ? 'r' : (dir == 2) ? 'd': '\0'; 
+    }
+    
+    class ScorePath {
+        int score;
+        String path;
+
+        ScorePath(int score, String path) {
+            this.score = score;
+            this.path = path;
         }
-    } 
+    }
+}
 
