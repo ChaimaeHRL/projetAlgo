@@ -1,4 +1,6 @@
-import java.util.Arrays;/* --- Divide & Conquer --- */
+import java.util.Arrays;
+
+/* --- Divide & Conquer --- */
 interface DC {
     static void sortLevel(int[][] monstersToSort, int[][] treasuresToSort) {
         // Calculer les valeurs de trésors et de monstres pour chaque rangée
@@ -12,6 +14,9 @@ interface DC {
 
         // Appliquer le tri fusion en utilisant les valeurs calculées pour chaque rangée
         triFusion(monstersToSort, treasuresToSort, rowValues, 0, numRows - 1);
+
+        // Afficher le niveau réorganisé
+        printLevel(monstersToSort);
     }
 
     static void triFusion(int[][] monsters, int[][] treasures, int[] rowValues, int debut, int fin) {
@@ -76,6 +81,17 @@ interface DC {
             rowValues[k] = droiteValues[j];
             j++;
             k++;
+        }
+    }
+
+    // Méthode pour imprimer le niveau réorganisé
+    static void printLevel(int[][] level) {
+        System.out.println("Niveau réorganisé :");
+        for (int i = 0; i < level.length; i++) {
+            for (int j = 0; j < level[i].length; j++) {
+                System.out.print(level[i][j] + " ");
+            }
+            System.out.println();
         }
     }
 }
