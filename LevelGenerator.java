@@ -28,14 +28,14 @@ interface DC {
     static void fusionner(int[][] monsters, int[][] treasures, int[] rowValues, int debut, int milieu, int fin) {
         int n1 = milieu - debut + 1;
         int n2 = fin - milieu;
-
+    
         int[][] gaucheMonsters = new int[n1][];
         int[][] gaucheTreasures = new int[n1][];
         int[] gaucheValues = new int[n1];
         int[][] droiteMonsters = new int[n2][];
         int[][] droiteTreasures = new int[n2][];
         int[] droiteValues = new int[n2];
-
+    
         for (int i = 0; i < n1; ++i) {
             gaucheMonsters[i] = monsters[debut + i];
             gaucheTreasures[i] = treasures[debut + i];
@@ -46,11 +46,12 @@ interface DC {
             droiteTreasures[j] = treasures[milieu + 1 + j];
             droiteValues[j] = rowValues[milieu + 1 + j];
         }
-
+    
         int i = 0, j = 0;
         int k = debut;
         while (i < n1 && j < n2) {
-            if (gaucheValues[i] >= droiteValues[j]) {
+            // Placer les rangées avec plus de monstres en haut
+            if (gaucheValues[i] <= droiteValues[j]) {
                 monsters[k] = gaucheMonsters[i];
                 treasures[k] = gaucheTreasures[i];
                 rowValues[k] = gaucheValues[i];
@@ -63,7 +64,8 @@ interface DC {
             }
             k++;
         }
-
+    
+        // Ajouter les rangées restantes de gauche
         while (i < n1) {
             monsters[k] = gaucheMonsters[i];
             treasures[k] = gaucheTreasures[i];
@@ -71,7 +73,8 @@ interface DC {
             i++;
             k++;
         }
-
+    
+        // Ajouter les rangées restantes de droite
         while (j < n2) {
             monsters[k] = droiteMonsters[j];
             treasures[k] = droiteTreasures[j];
@@ -80,3 +83,4 @@ interface DC {
             k++;
         }
     }
+    
