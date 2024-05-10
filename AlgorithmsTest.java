@@ -2,7 +2,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AlgorithmsTest {
+class AlgorithmsTest extends AlgorithmsTest{
 
     // Generate & Test
     @Test
